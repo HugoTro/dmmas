@@ -5,7 +5,6 @@
 
 struct ElementInfo {
     void *element_ptr;
-    uint64_t id;
     uint64_t element_size;
 };
 

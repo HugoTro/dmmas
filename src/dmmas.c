@@ -31,7 +31,6 @@ struct ElementInfo *createDynamicArray(uint64_t element_size_initial, uint64_t n
             return NULL;
         }
         (ptr+i)->element_ptr = temp_ptr;
-        (ptr+i)->id = i;
         (ptr+i)->element_size = element_size_initial;
         temp_ptr = NULL;
         (*element_count)++;
@@ -49,7 +48,6 @@ struct ElementInfo *createEmptyDynamicArray(int32_t *state_var) {
     }
     array_length = 1;
     ptr->element_ptr = NULL;
-    ptr->id = 0;
     ptr->element_size = 0;
     *state_var = 0; // 0: Successful allocation of all memory spaces.
     return ptr;
@@ -79,14 +77,13 @@ struct ElementInfo *addElement(struct ElementInfo *array_ptr, uint64_t *element_
         *state_var = 1; // Allocation of space for the new ElementInfo array failed, so we pass the old one (still valid with realloc).
         return array_ptr;
     }
-    array_length+=1;
+    array_length++;
     void *obj_ptr = malloc(element_size);
     if (!obj_ptr) {
         *state_var = 2; // Allocation for the actual element has failed.
         return new_ptr; // Is OK because the actual length of the array is not decreased.
     }
     (new_ptr+array_length-1)->element_ptr = obj_ptr;
-    (new_ptr+array_length-1)->id = *element_count;
     (new_ptr+array_length-1)->element_size = element_size;
     (*element_count)++;
     *state_var = 0;
@@ -132,9 +129,6 @@ struct ElementInfo *addElementOptimized(struct ElementInfo *array_ptr, uint64_t 
         return new_ptr; // will return the array like if upon object deletion -> pointer for element array_ptr+offset will be NULL and array_length will remain unchanged.
     }
     (new_ptr+offset)->element_ptr = obj_ptr;
-    if (!space_reused) {
-        (new_ptr+offset)->id = *element_count; // Possible since *element_count is not yet incremented.
-    }
     (new_ptr+offset)->element_size = element_size;
     (*element_count)++; // Everything is setup, object count is incremented
     *state_var = 0;
